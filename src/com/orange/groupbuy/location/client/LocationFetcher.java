@@ -14,6 +14,8 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.view.client.ListDataProvider;
+import com.orange.groupbuy.location.client.api.APIFactory;
+import com.orange.groupbuy.location.client.api.FetchAPI;
 import com.orange.groupbuy.location.client.model.PlaceRecord;
 
 /**
@@ -24,37 +26,29 @@ public class LocationFetcher implements EntryPoint {
 	private final LocationServiceAsync locationService = GWT
 			.create(LocationService.class);
 
-	// @UiField(provided = true)
-	CellTable<PlaceRecord> cellTable;
+	/**
+	 * change the init value if you want different fetch source
+	 */
+	private final static APIFactory.Type FETCH_SOURCE_TYPE = APIFactory.Type.BAIDU;
+
+	private CellTable<PlaceRecord> cellTable;
 
 	private int processedRow;
 
 	final ListDataProvider<PlaceRecord> dataProvider = new ListDataProvider<PlaceRecord>();
 
-	public static native String fetch(String address, String city)/*-{
-		var map = new $wnd.BMap.Map("container");
-		// 创建地址解析器实例
-		var myGeo = new $wnd.BMap.Geocoder();
-		var latResult = $doc.getElementById("latResult");
-		var lngResult = $doc.getElementById("lngResult");
-		// 将地址解析结果显示在地图上,并调整地图视野
-		myGeo.getPoint(address, function(point) {
-			if (point) {
-				latResult.value = point.lat;
-				lngResult.value = point.lng;
-			}
-		}, city);
-	}-*/;
+	private FetchAPI fether;
 
 	private static final int REFRESH_INTERVAL = 1000;
-	private static final int SAVE_INTERVAL = 1200;
+	private static final int SAVE_INTERVAL = 1300;
 
 	/**
 	 * This is the entry point method.
 	 */
-	@SuppressWarnings("deprecation")
 	@Override
 	public void onModuleLoad() {
+		initFetcherAPI();
+
 		cellTable = new CellTable<PlaceRecord>(PlaceRecord.KEY_PROVIDER);
 		RootPanel.get("locationContainer").add(cellTable);
 		cellTable.setWidth("100%", true);
@@ -77,6 +71,8 @@ public class LocationFetcher implements EntryPoint {
 							addPlace(palce);
 						}
 						dataProvider.addDataDisplay(cellTable);
+						// TODO: only for debug, not suitable for huge data.
+						// cellTable.setPageSize(records.size());
 					}
 				});
 
@@ -99,11 +95,15 @@ public class LocationFetcher implements EntryPoint {
 
 	}
 
+	private void initFetcherAPI() {
+		fether = APIFactory.create(FETCH_SOURCE_TYPE);
+	}
+
 	protected void saveData() {
 		List<PlaceRecord> records = dataProvider.getList();
 		String lat = LocationFetcher.getLatResult();
 		String lng = LocationFetcher.getLngResult();
-		if (!lat.isEmpty() && !lng.isEmpty()) {
+		if (!lat.isEmpty() && !lng.isEmpty() && processedRow < records.size()) {
 			PlaceRecord r = records.get(processedRow);
 			r.setLatitude(lat);
 			r.setLongitude(lng);
@@ -112,6 +112,10 @@ public class LocationFetcher implements EntryPoint {
 				@Override
 				public void onFailure(Throwable caught) {
 					GWT.log("save failed");
+					DialogBox box = new DialogBox();
+					box.setTitle("savePlaceRecord Failed");
+					box.setText(caught.getMessage());
+					box.show();
 				}
 
 				@Override
@@ -130,22 +134,15 @@ public class LocationFetcher implements EntryPoint {
 	protected void fetchData() {
 		List<PlaceRecord> records = dataProvider.getList();
 		String lat = LocationFetcher.getLatResult();
-		GWT.log("lat:" + lat);
 		String lng = getLngResult();
 		if (lat.isEmpty() && lng.isEmpty()) {
 			if (records != null && !records.isEmpty()
 					&& processedRow < records.size()) {
 				PlaceRecord r = records.get(processedRow);
-				fetch(r.getAddress(), r.getCity());
-				String latV = getLatResult();
-				GWT.log("latV:" + latV);
+				fether.fetch(r.getAddress(), r.getCity());
 			}
 		}
 	}
-
-//	private Element getLngResult() {
-//		return RootPanel.get("lngResult").getElement();
-//	}
 
 	private static  native String getLngResult() /*-{
 		var lngResult = $doc.getElementById("lngResult");
@@ -157,10 +154,6 @@ public class LocationFetcher implements EntryPoint {
 		lngResult.value = lat;
 	}-*/;
 
-	// private Element getLatResult() {
-	// return RootPanel.get("latResult").getElement();
-	// }
-
 	private static native String getLatResult() /*-{
 		var latResult = $doc.getElementById("latResult");
 		return latResult.value;
@@ -170,6 +163,7 @@ public class LocationFetcher implements EntryPoint {
 		var latResult = $doc.getElementById("latResult");
 		latResult.value = lng;
 	}-*/;
+
 	private void initTableColumns() {
 		// id
 		Column<PlaceRecord, String> idColumn = new Column<PlaceRecord, String>(

@@ -16,14 +16,17 @@ public class LocationServiceImpl extends RemoteServiceServlet implements
 	private Logger log = Logger.getLogger(LocationServiceImpl.class.getName());
 	@Override
 	public List<PlaceRecord> getPlaceAddress(Date date) {
+		int recordCount = 10;
+
 		List<PlaceRecord> records = new ArrayList<PlaceRecord>();
 		String[] address = new String[] { "丰台区六里桥甲 1号5栋1层", "丰台区开阳路1号 瀚海花园大厦3层" };
 		String[] city = new String[] { "北京市", "北京市" };
 		
 		int id = 0;
-		for (int i = 0; i < address.length; i++) {
-			String addr = address[i];
-			String ci = city[i];
+		for (int i = 0; i < recordCount; i++) {
+			int index = i % address.length;
+			String addr = address[index];
+			String ci = city[index];
 			records.add(new PlaceRecord(String.valueOf(id), addr, ci));
 			id++;
 		}
