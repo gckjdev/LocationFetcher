@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE web-app
+    PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+    "http://java.sun.com/dtd/web-app_2_3.dtd">
+
+<web-app>
+  
+  <!-- Servlets -->
+  <servlet>
+    <servlet-name>greetServlet</servlet-name>
+    <servlet-class>com.orange.groupbuy.location.server.GreetingServiceImpl</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>greetServlet</servlet-name>
+    <url-pattern>/locationfetcher/greet</url-pattern>
+  </servlet-mapping>
+  
+    <servlet>
+    <servlet-name>locationServlet</servlet-name>
+    <servlet-class>com.orange.groupbuy.location.server.LocationServiceImpl</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>locationServlet</servlet-name>
+    <url-pattern>/locationfetcher/location</url-pattern>
+  </servlet-mapping>
+  <!-- Default page to serve -->
+  <welcome-file-list>
+    <welcome-file>LocationFetcher.html</welcome-file>
+  </welcome-file-list>
+
+</web-app>
