@@ -41,6 +41,7 @@ public class LocationFetcher implements EntryPoint {
 
 	private static final int REFRESH_INTERVAL = 1000;
 	private static final int SAVE_INTERVAL = 1300;
+	private Boolean first_bool = true;
 
 	/**
 	 * This is the entry point method.
@@ -123,28 +124,60 @@ public class LocationFetcher implements EntryPoint {
 					GWT.log("save ok");
 					// refresh table
 					dataProvider.refresh();
-					processedRow++;
 					LocationFetcher.setLatResult("");
 					LocationFetcher.setLngResult("");
 				}
 			});
+		} else {
+			GWT.log("lat and lng is null");
 		}
 	}
 
 	protected void fetchData() {
 		List<PlaceRecord> records = dataProvider.getList();
 		String lat = LocationFetcher.getLatResult();
-		String lng = getLngResult();
+		String lng = LocationFetcher.getLngResult();
 		if (lat.isEmpty() && lng.isEmpty()) {
 			if (records != null && !records.isEmpty()
-					&& processedRow < records.size()) {
+					&& ++processedRow < records.size()) {
+				if (first_bool) {
+					processedRow--;
+					first_bool = false;
+				}
 				PlaceRecord r = records.get(processedRow);
 				fether.fetch(r.getAddress(), r.getCity());
+			}
+			// TODO
+			if (processedRow >= records.size()) {
+				processedRow = 0;
+				locationService.getPlaceAddress(new Date(),
+						new AsyncCallback<List<PlaceRecord>>() {
+
+							@Override
+							public void onFailure(Throwable caught) {
+								DialogBox message = new DialogBox();
+								message.setTitle("failed to get palce");
+								message.setText(caught.getMessage());
+								message.show();
+							}
+
+							@Override
+							public void onSuccess(List<PlaceRecord> records) {
+								for (PlaceRecord palce : records) {
+									addPlace(palce);
+								}
+								// TODO: only for debug, not suitable for huge
+								// cellTable.setPageSize(records.size());
+							}
+						});
+				PlaceRecord r = records.get(processedRow);
+				fether.fetch(r.getAddress(), r.getCity());
+				processedRow++;
 			}
 		}
 	}
 
-	private static  native String getLngResult() /*-{
+	private static native String getLngResult() /*-{
 		var lngResult = $doc.getElementById("lngResult");
 		return lngResult.value;
 	}-*/;
