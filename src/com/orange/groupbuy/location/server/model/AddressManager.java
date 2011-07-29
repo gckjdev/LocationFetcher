@@ -54,8 +54,6 @@ public class AddressManager {
 			updateMap.put(DBConstants.F_GPS, gps);
 			mongoClient.findAndModify(DBConstants.T_IDX_PRODUCT_GPS,
 					equalCondition, updateMap);
-			mongoClient.save(DBConstants.T_IDX_PRODUCT_GPS,
-					address.getDbObject());
 		}
 
 		return true;
@@ -69,18 +67,18 @@ public class AddressManager {
 
 		for (ProductAddress address : productAddressList) {
 
-			String cityString = address.getCity();
-			String addrString = address.getAddress();
 			List<Double> gps = address.getGPS();
-			Map<String, Object> equalCondition = new HashMap<String, Object>();
-			equalCondition.put(DBConstants.F_ADDRESS, addrString);
-			equalCondition.put(DBConstants.F_CITY, cityString);
 			Map<String, Object> updateMap = new HashMap<String, Object>();
 			updateMap.put(DBConstants.F_GPS, gps);
-			mongoClient.findAndModifySet(DBConstants.T_PRODUCT,
-					equalCondition, updateMap);
-			mongoClient.save(DBConstants.T_PRODUCT,
-					address.getDbObject());
+			
+			List<ObjectId> productIdList = address.getProductList();
+			if (productIdList != null && productIdList.size() > 0){			
+				System.out.println("<debug> update product id list");
+				mongoClient.findAndModifySet(DBConstants.T_PRODUCT, DBConstants.F_ID, productIdList, updateMap);
+			}
+			else{
+				System.out.println("<debug> update product id list, but list is null, address="+address.getDbObject().toString());				
+			}			
 		}
 		return true;
 	}

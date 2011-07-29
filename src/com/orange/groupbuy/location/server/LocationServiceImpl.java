@@ -41,7 +41,8 @@ public class LocationServiceImpl extends RemoteServiceServlet implements
 			String addr = item.getAddress();
 			String city = item.getCity();
 			String id   = item.getStringObjectId();
-			records.add(new PlaceRecord(id, addr, city));
+			List<String> productIdList = item.getProductStringList();
+			records.add(new PlaceRecord(id, addr, city, productIdList));
 		}
 		
 		return records;
@@ -55,6 +56,7 @@ public class LocationServiceImpl extends RemoteServiceServlet implements
 		ProductAddress productAddress = new ProductAddress(new BasicDBObject());
 		productAddress.setCity(record.getCity());
 		productAddress.setAddress(record.getAddress());
+		productAddress.setProductIdList(record.getProductIdList());
 		double lng = Double.valueOf(record.getLongitude());
 		double lat = Double.valueOf(record.getLatitude());
 		productAddress.setGPS(lng, lat);
