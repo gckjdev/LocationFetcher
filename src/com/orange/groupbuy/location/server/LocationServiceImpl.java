@@ -25,13 +25,15 @@ import com.orange.groupbuy.location.server.model.ProductAddress;
 public class LocationServiceImpl extends RemoteServiceServlet implements
 		LocationService {
 
+	static final MongoDBClient mongoClient = new MongoDBClient("localhost", "groupbuy", "", "");
+	
 	private Logger log = Logger.getLogger(LocationServiceImpl.class.getName());
 	@Override
 	public List<PlaceRecord> getPlaceAddress(Date date) {
 
 		List<PlaceRecord> records = new ArrayList<PlaceRecord>();
 		// read address and city from address table
-		MongoDBClient mongoClient = new MongoDBClient("localhost", "groupbuy", "", "");
+		
 		List<ProductAddress> list = AddressManager.findAddressForGPSUpdate(mongoClient, 50);
 		Iterator<?> iter = list.iterator();
 		while(iter.hasNext()){
@@ -49,7 +51,6 @@ public class LocationServiceImpl extends RemoteServiceServlet implements
 	@Override
 	public void savePlaceRecord(PlaceRecord record) {
 		// update gps to address table
-		MongoDBClient mongoClient = new MongoDBClient("localhost", "groupbuy", "", "");
 		List<ProductAddress> list = new LinkedList<ProductAddress>();
 		ProductAddress productAddress = new ProductAddress(new BasicDBObject());
 		productAddress.setCity(record.getCity());
