@@ -74,4 +74,12 @@ public class PlaceRecord implements Serializable {
 	public void setCity(String city) {
 		this.city = city;
 	}
+
+	public double getDoubleLatitude() {
+		return Double.valueOf(getLatitude());
+	}
+	
+	public double getDoubleLongitude() {
+		return Double.valueOf(getLongitude());
+	}
 }

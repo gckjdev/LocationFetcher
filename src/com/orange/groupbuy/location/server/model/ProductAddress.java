@@ -10,6 +10,10 @@ public class ProductAddress {
 	
 	BasicDBObject dbObject = new BasicDBObject();
 	
+	public String toString(){
+		return "ProductAddress = "+dbObject.toString();
+	}
+	
 	public DBObject getDbObject() {
 		return dbObject;
 	}

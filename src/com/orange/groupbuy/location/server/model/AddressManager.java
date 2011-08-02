@@ -2,6 +2,7 @@ package com.orange.groupbuy.location.server.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -54,8 +55,7 @@ public class AddressManager {
 			updateMap.put(DBConstants.F_GPS, gps);
 			mongoClient.findAndModify(DBConstants.T_IDX_PRODUCT_GPS,
 					equalCondition, updateMap);
-			mongoClient.save(DBConstants.T_IDX_PRODUCT_GPS,
-					address.getDbObject());
+
 		}
 
 		return true;
@@ -79,10 +79,20 @@ public class AddressManager {
 			updateMap.put(DBConstants.F_GPS, gps);
 			mongoClient.findAndModifySet(DBConstants.T_PRODUCT,
 					equalCondition, updateMap);
-			mongoClient.save(DBConstants.T_PRODUCT,
-					address.getDbObject());
+
 		}
 		return true;
+	}
+
+	public static void findAndUpdateGPSFailure(MongoDBClient mongoclient,
+			String id) {
+		
+		ObjectId objectId = new ObjectId(id);
+		List<Double> gpsFailureValue = new LinkedList<Double>();
+		gpsFailureValue.add(-1.0);
+		gpsFailureValue.add(-1.0);
+		mongoclient.updateByKey(DBConstants.T_IDX_PRODUCT_GPS, objectId, DBConstants.F_GPS, gpsFailureValue);
+		
 	}
 
 }

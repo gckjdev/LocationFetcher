@@ -1,10 +1,23 @@
 package com.orange.groupbuy.location.client.api;
 
+import org.jdom.Element;
+
 public class BaiduAPIImpl implements FetchAPI {
 
 	@Override
 	public void fetch(String address, String city) {
 		fetchNaviveImpl(address, city);
+	}
+
+	private String updateAddress(String address, String city) {
+		int index = address.indexOf("市");
+		if(index != -1)
+			return address;
+		else {
+			String updateAddress = city.concat("市").concat(address);
+			return address;
+		}
+		
 	}
 
 	public static native void fetchNaviveImpl(String address, String city)/*-{
@@ -21,4 +34,7 @@ public class BaiduAPIImpl implements FetchAPI {
 			}
 		}, city);
 	}-*/;
+	
+	
+	
 }
