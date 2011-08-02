@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.bson.types.ObjectId;
+
 
 
 import com.mongodb.BasicDBObject;
@@ -266,6 +268,25 @@ public class MongoDBClient {
 			return collection.find().skip(offset).limit(limit);
 		}
 		return collection.find(query).skip(offset).limit(limit);
+	}
+
+	public void updateByKey(String tableName, ObjectId keyId, String fieldName,
+			List<Double> fieldValue) {
+		
+		DBCollection collection = db.getCollection(tableName);
+		if (collection == null)
+			return;
+
+		DBObject query = new BasicDBObject();
+		query.put("_id", keyId);
+
+		DBObject update = new BasicDBObject();
+		DBObject updateValue = new BasicDBObject();
+		updateValue.put(fieldName, fieldValue);
+		update.put("$set", updateValue);
+		
+		System.out.println("<updateByKey> query = " + query.toString() + ", update = " + updateValue.toString());
+		collection.update(query, update);
 	}
 
 }
