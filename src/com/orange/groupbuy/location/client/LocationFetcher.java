@@ -41,7 +41,6 @@ public class LocationFetcher implements EntryPoint {
 
 	private static final int REFRESH_INTERVAL = 1000;
 	private static final int SAVE_INTERVAL = 1300;
-	private Boolean first_bool = true;
 
 	/**
 	 * This is the entry point method.
@@ -61,23 +60,23 @@ public class LocationFetcher implements EntryPoint {
 					@Override
 					public void onFailure(Throwable caught) {
 						DialogBox message = new DialogBox();
-						message.setTitle("failed to get palce");
+						message.setTitle("failed to get place");
 						message.setText(caught.getMessage());
 						message.show();
 					}
 
 					@Override
 					public void onSuccess(List<PlaceRecord> records) {
+						List<PlaceRecord> list = dataProvider.getList();
 						for (PlaceRecord palce : records) {
-							addPlace(palce);
+							list.add(palce);
 						}
 						dataProvider.addDataDisplay(cellTable);
-						// TODO: only for debug, not suitable for huge data.
-						// cellTable.setPageSize(records.size());
+						cellTable.setPageSize(list.size());
 					}
 				});
 
-		processedRow = 0;
+		processedRow = -1;
 		Timer fetchTimer = new Timer() {
 			@Override
 			public void run() {
@@ -93,6 +92,7 @@ public class LocationFetcher implements EntryPoint {
 			}
 		};
 		saveTimer.scheduleRepeating(SAVE_INTERVAL);
+		
 
 	}
 
@@ -102,9 +102,11 @@ public class LocationFetcher implements EntryPoint {
 
 	protected void saveData() {
 		List<PlaceRecord> records = dataProvider.getList();
+		if(records.size() == 0)
+			return;
 		String lat = LocationFetcher.getLatResult();
 		String lng = LocationFetcher.getLngResult();
-		if (!lat.isEmpty() && !lng.isEmpty() && processedRow < records.size()) {
+		if (processedRow < records.size()) {
 			PlaceRecord r = records.get(processedRow);
 			r.setLatitude(lat);
 			r.setLongitude(lng);
@@ -140,16 +142,13 @@ public class LocationFetcher implements EntryPoint {
 		if (lat.isEmpty() && lng.isEmpty()) {
 			if (records != null && !records.isEmpty()
 					&& ++processedRow < records.size()) {
-				if (first_bool) {
-					processedRow--;
-					first_bool = false;
-				}
 				PlaceRecord r = records.get(processedRow);
 				fether.fetch(r.getAddress(), r.getCity());
 			}
 			// TODO
 			if (processedRow >= records.size()) {
-				processedRow = 0;
+				// let saveData() function quit
+				processedRow = Integer.MAX_VALUE;
 				locationService.getPlaceAddress(new Date(),
 						new AsyncCallback<List<PlaceRecord>>() {
 
@@ -163,16 +162,22 @@ public class LocationFetcher implements EntryPoint {
 
 							@Override
 							public void onSuccess(List<PlaceRecord> records) {
+								List<PlaceRecord> list = dataProvider.getList();
+								int len = list.size();
+								for (int i = 0; i < len; i++)
+									list.remove(0);
 								for (PlaceRecord palce : records) {
-									addPlace(palce);
+									list.add(palce);
 								}
-								// TODO: only for debug, not suitable for huge
-								// cellTable.setPageSize(records.size());
+								dataProvider.flush();
+								dataProvider.refresh();
 							}
 						});
-				PlaceRecord r = records.get(processedRow);
-				fether.fetch(r.getAddress(), r.getCity());
-				processedRow++;
+				if (records.size() > 0) {
+					processedRow = 0;
+					PlaceRecord r = records.get(processedRow);
+					fether.fetch(r.getAddress(), r.getCity());
+				} 
 			}
 		}
 	}
@@ -257,10 +262,4 @@ public class LocationFetcher implements EntryPoint {
 		cellTable.setColumnWidth(addressColumn, 60, Unit.PCT);
 	}
 
-	public void addPlace(PlaceRecord contact) {
-		List<PlaceRecord> records = dataProvider.getList();
-		// Remove the contact first so we don't add a duplicate.
-		records.remove(contact);
-		records.add(contact);
-	}
 }

@@ -118,39 +118,10 @@ public class MongoDBClient {
 		update.put("$addtoset", updateValue);
 		// collection.findan
 		System.out.println("query = " + query.toString());
-		System.out.println("update = " + update.toString());
-		return true;
-	}
-	
-	public Boolean findAndModifySet(String tableName,
-			String fieldName, List<?> valueList, Map<String, Object> updateMap) {
-		DBCollection collection = db.getCollection(tableName);
-		if (collection == null)
-			return false;
-
-		DBObject in = new BasicDBObject();
-		DBObject query = new BasicDBObject();
-		if (fieldName != null && fieldName.trim().length() > 0
-				&& valueList != null && valueList.size() > 0) {
-			in.put("$in", valueList);
-			query.put(fieldName, in);
-		}
-		
-		DBObject update = new BasicDBObject();
-		DBObject updateValue = new BasicDBObject();
-		updateValue.putAll(updateMap);
-		update.put("$addToSet", updateValue);
-		
-		collection.findAndModify(query, update);
-
-		// collection.findan
-		System.out.println("query = " + query.toString());
-		System.out.println("update = " + update.toString());
+		System.out.println("update = " + updateValue.toString());
 		return true;
 	}
 
-	
-	
 	public void save(String tableName, DBObject docObject) {
 		DBCollection collection = db.getCollection(tableName);
 		if (collection == null)
