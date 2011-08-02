@@ -28,6 +28,7 @@ public class AddressManager {
 			while (cursor.hasNext()) {
 				BasicDBObject obj = (BasicDBObject) cursor.next();
 				list.add(new ProductAddress(obj));
+				System.out.println("address to be parsed = "+obj.toString());
 			}
 			cursor.close();
 			return list;
