@@ -1,7 +1,6 @@
 package com.orange.groupbuy.location.client.model;
 
 import java.io.Serializable;
-import java.util.List;
 
 import com.google.gwt.view.client.ProvidesKey;
 
@@ -20,7 +19,6 @@ public class PlaceRecord implements Serializable {
 	private String city;
 	private String latitude;
 	private String longitude;
-	private List<String> productIdList;
 
 	public PlaceRecord() {
 
@@ -31,11 +29,10 @@ public class PlaceRecord implements Serializable {
 		this.address = address;
 	}
 
-	public PlaceRecord(String id, String address, String city, List<String> productIdList) {
+	public PlaceRecord(String id, String address, String city) {
 		this.id = id;
 		this.address = address;
 		this.city = city;
-		this.productIdList = productIdList;
 	}
 
 	public String getId() {
@@ -77,14 +74,4 @@ public class PlaceRecord implements Serializable {
 	public void setCity(String city) {
 		this.city = city;
 	}
-
-	public List<String> getProductIdList() {
-		return productIdList;
-	}
-
-	public void setProductIdList(List<String> productIdList) {
-		this.productIdList = productIdList;
-	}
-	
-	
 }
