@@ -1,6 +1,5 @@
 package com.orange.groupbuy.location.client.api;
 
-import org.jdom.Element;
 
 public class BaiduAPIImpl implements FetchAPI {
 
