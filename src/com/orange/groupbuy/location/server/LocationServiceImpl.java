@@ -34,7 +34,7 @@ public class LocationServiceImpl extends RemoteServiceServlet implements
 		LocationService {
 
 	private Logger log = Logger.getLogger(LocationServiceImpl.class.getName());
-	public static final String GET_URL = "http://maps.google.com/maps/api/geocode/xml?address=";
+	public static final String GET_URL = "https://maps.google.com/maps/api/geocode/xml?address=";
 	public static final MongoDBClient mongoClient = new MongoDBClient("localhost", "groupbuy",
 			"", "");
 	
@@ -65,17 +65,18 @@ public class LocationServiceImpl extends RemoteServiceServlet implements
 
 	public boolean tryGoogleParsing(PlaceRecord record){
 		final int MAX_GOOGLE_REQUEST = 1500;
-		int googleCounts = googleCounter.incrementAndGet();
-		if(googleCounts >= MAX_GOOGLE_REQUEST) {
-			log.info("<tryGoogleParsing> numers of parser reach 1500");
-			return false;
-		}
 		String lngString = record.getLongitude();
 		String latString = record.getLatitude();
 		if (!lngString.isEmpty() && !latString.isEmpty()) {
 			// already has latitude/longitude, return success
 			return true;
 		} else {
+			int googleCounts = googleCounter.incrementAndGet();
+			if(googleCounts >= MAX_GOOGLE_REQUEST) {
+				log.info("<tryGoogleParsing> numers of parser reach 1500");
+				return false;
+			}
+
 			String address = updateAddress(record.getAddress(), record.getCity());
 			List<Double> latlngList = parseAddressByGoogleAPI(address);
 			if(latlngList == null){

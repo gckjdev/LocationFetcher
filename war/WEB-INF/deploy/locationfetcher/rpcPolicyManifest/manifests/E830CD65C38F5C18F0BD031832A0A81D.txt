@@ -1,2 +1,0 @@
-serviceClass: com.orange.groupbuy.location.client.LocationService
-path: DC01D41356C39761043DC626B03A98DD.gwt.rpc

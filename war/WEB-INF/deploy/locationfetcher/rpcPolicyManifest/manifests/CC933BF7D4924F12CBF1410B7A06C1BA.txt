@@ -1,2 +1,0 @@
-serviceClass: com.orange.groupbuy.location.client.GreetingService
-path: F285297083B3722882EDDE41CB675DA1.gwt.rpc
