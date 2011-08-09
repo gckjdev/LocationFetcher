@@ -96,22 +96,30 @@ public class LocationServiceImpl extends RemoteServiceServlet implements
 	
 	private String updateAddress(String address, String city) {
 		
-		int index = address.indexOf("市");
-		if(index != -1)
+		if (address == null)
+			return address;
+		
+		int indexForCity = address.indexOf("市");
+		int indexForProvince = address.indexOf("省");
+		if(indexForCity != -1 || indexForProvince != -1)
 			return address;
 		else {
+			if (city == null)
+				return address;
+			
 			String updateAddress = city.concat("市").concat(address);
-			return address;
+			return updateAddress;
 		}
 	}
 
 	@Override
 	public void savePlaceRecord(PlaceRecord record) {
 		
+		try{
 		printStatistic();
 		
 		boolean result = tryGoogleParsing(record);
-		if (!result){
+		if (!result || !isValidGps(record.getDoubleLatitude(), record.getDoubleLongitude())){
 			// update to failure status, never load the record again
 			AddressManager.findAndUpdateGPSFailure(mongoClient, record.getId());
 			incFailCounter();
@@ -141,7 +149,18 @@ public class LocationServiceImpl extends RemoteServiceServlet implements
 		else{
 			incSucessCounter();
 		}
+		}catch (Exception e){
+			log.info("<savePlaceRecord> but catch exception");
+			e.printStackTrace();
+		}
 
+	}
+
+	private boolean isValidGps(double latitude, double longitude) {
+		if (latitude >= 180.0f || latitude < -180.0f ||
+			longitude >= 180.0f || longitude < -180.0f	)
+			return false;
+		return true;
 	}
 
 	public List<Double> parseAddressByGoogleAPI(String address) {
