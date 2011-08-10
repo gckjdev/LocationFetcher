@@ -34,7 +34,7 @@ public class LocationServiceImpl extends RemoteServiceServlet implements
 		LocationService {
 
 	private Logger log = Logger.getLogger(LocationServiceImpl.class.getName());
-	public static final String GET_URL = "https://maps.google.com/maps/api/geocode/xml?address=";
+	public static final String GET_URL = "http://maps.google.com/maps/api/geocode/xml?address=";
 	public static final MongoDBClient mongoClient = new MongoDBClient("localhost", "groupbuy",
 			"", "");
 	
@@ -64,22 +64,25 @@ public class LocationServiceImpl extends RemoteServiceServlet implements
 	}
 
 	public boolean tryGoogleParsing(PlaceRecord record){
+		if (record == null)
+			return false;
+		
 		final int MAX_GOOGLE_REQUEST = 1500;
 		String lngString = record.getLongitude();
 		String latString = record.getLatitude();
-		if (!lngString.isEmpty() && !latString.isEmpty()) {
+		if (lngString != null && !lngString.isEmpty() && latString != null && !latString.isEmpty()) {
 			// already has latitude/longitude, return success
 			return true;
 		} else {
 			int googleCounts = googleCounter.incrementAndGet();
 			if(googleCounts >= MAX_GOOGLE_REQUEST) {
-				log.info("<tryGoogleParsing> numers of parser reach 1500");
+				log.info("<tryGoogleParsing> numers of parser reach "+MAX_GOOGLE_REQUEST);
 				return false;
 			}
 
 			String address = updateAddress(record.getAddress(), record.getCity());
 			List<Double> latlngList = parseAddressByGoogleAPI(address);
-			if(latlngList == null){
+			if(latlngList == null || latlngList.size() < 2){
 				// google parsing failure, return failure
 				return false;
 			}
@@ -137,21 +140,21 @@ public class LocationServiceImpl extends RemoteServiceServlet implements
 		
 		// update address table
 		if (!AddressManager.findAndUpdateGPS(mongoClient, list)) {
-			log.info("<savePlaceRecord> fail to findAndUpdateGPS, product address = "+productAddress.toString());
+			log.severe("<savePlaceRecord> fail to findAndUpdateGPS, product address = "+productAddress.toString());
 			incFailCounter();
 			return;
 		}
 		
 		// update gps to product table
 		if (!AddressManager.findAndUpdateProductGPS(mongoClient, list)) {
-			log.info("<savePlaceRecord> fail to findAndUpdateProductGPS, product address = "+productAddress.toString());
+			log.severe("<savePlaceRecord> fail to findAndUpdateProductGPS, product address = "+productAddress.toString());
 			return;
 		}
 		else{
 			incSucessCounter();
 		}
 		}catch (Exception e){
-			log.info("<savePlaceRecord> but catch exception");
+			log.severe("<savePlaceRecord> but catch exception = "+e.toString());
 			e.printStackTrace();
 		}
 
@@ -171,22 +174,32 @@ public class LocationServiceImpl extends RemoteServiceServlet implements
 		try {
 			
 			String getURL = GET_URL.concat(URLEncoder.encode(address, "utf-8")).concat("&sensor=false");
-			log.info("<parseAddressByGoogleAPI> url="+getURL);
+//			log.info("<parseAddressByGoogleAPI> url="+getURL);
 			
 			URL getUrl = new URL(getURL);
 			SAXBuilder sb = new SAXBuilder();
 			Document doc = sb.build(getUrl);
+			if (doc == null)
+				return null;
+			
 			Element root = doc.getRootElement();
+			if (root == null)
+				return null;
+			
 			Element data = getFieldElement(root, "result", "geometry", "location");
+			if (data == null)
+				return null;
+			
 			String lat = getFieldValue(data, "lat");
 			String lng = getFieldValue(data, "lng");
-			if(lat.isEmpty() || lng.isEmpty())
+			if(lat == null || lat.isEmpty() || lng == null || lng.isEmpty())
 				return null;
+			
 			List<Double> list = new LinkedList<Double>();
 			list.add(Double.parseDouble(lat));
 			list.add(Double.parseDouble(lng));
 			
-			log.info("<parseAddressByGoogleAPI> result = "+lat+", "+lng);
+			log.info("<parseAddressByGoogleAPI> address="+address+", result = "+lat+", "+lng);
 			return list;
 		} catch (Exception e) {
 			log.info("<parseAddressByGoogleAPI> catch exception = "+e.toString());

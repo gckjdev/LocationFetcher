@@ -98,8 +98,8 @@ public class MongoDBClient {
 		updateValue.putAll(updateMap);
 		update.put("$set", updateValue);
 		// collection.findan
-		System.out.println("query = " + query.toString());
-		System.out.println("update = " + updateValue.toString());
+//		System.out.println("query = " + query.toString());
+//		System.out.println("update = " + updateValue.toString());
 		return collection.findAndModify(query, update);
 	}
 	
@@ -119,8 +119,8 @@ public class MongoDBClient {
 		updateValue.putAll(updateMap);
 		update.put("$addtoset", updateValue);
 		// collection.findan
-		System.out.println("query = " + query.toString());
-		System.out.println("update = " + updateValue.toString());
+//		System.out.println("query = " + query.toString());
+//		System.out.println("update = " + updateValue.toString());
 		return true;
 	}
 
@@ -228,7 +228,7 @@ public class MongoDBClient {
 		DBObject query = new BasicDBObject();
 		query.put(gpsFieldName, near);
 
-		System.out.println(query.toString());
+//		System.out.println(query.toString());
 
 		DBCursor result = collection.find(query).skip(offset).limit(count);
 		return result;
@@ -285,7 +285,7 @@ public class MongoDBClient {
 		updateValue.put(fieldName, fieldValue);
 		update.put("$set", updateValue);
 		
-		System.out.println("<updateByKey> query = " + query.toString() + ", update = " + updateValue.toString());
+//		System.out.println("<updateByKey> query = " + query.toString() + ", update = " + updateValue.toString());
 		collection.update(query, update);
 	}
 
