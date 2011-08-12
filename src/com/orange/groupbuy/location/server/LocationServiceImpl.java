@@ -21,6 +21,7 @@ import org.jdom.input.SAXBuilder;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
+import com.ibm.icu.text.SimpleDateFormat;
 import com.mongodb.BasicDBObject;
 import com.orange.groupbuy.location.client.LocationService;
 import com.orange.groupbuy.location.client.model.PlaceRecord;
@@ -42,6 +43,7 @@ public class LocationServiceImpl extends RemoteServiceServlet implements
 	static AtomicInteger successCounter = new AtomicInteger(0);
 	static AtomicInteger totalCounter = new AtomicInteger(0);
 	static AtomicInteger googleCounter = new AtomicInteger(0);
+	static String dateString = "";
 	@Override
 	public List<PlaceRecord> getPlaceAddress(Date date) {
 
@@ -67,7 +69,6 @@ public class LocationServiceImpl extends RemoteServiceServlet implements
 		if (record == null)
 			return false;
 		
-		final int MAX_GOOGLE_REQUEST = 1500;
 		String lngString = record.getLongitude();
 		String latString = record.getLatitude();
 		if (lngString != null && !lngString.isEmpty() && latString != null && !latString.isEmpty()) {
@@ -75,10 +76,9 @@ public class LocationServiceImpl extends RemoteServiceServlet implements
 			return true;
 		} else {
 			int googleCounts = googleCounter.incrementAndGet();
-			if(googleCounts >= MAX_GOOGLE_REQUEST) {
-				log.info("<tryGoogleParsing> numers of parser reach "+MAX_GOOGLE_REQUEST);
+			
+			if(reachMaxGoogleRequest(googleCounts))
 				return false;
-			}
 
 			String address = updateAddress(record.getAddress(), record.getCity());
 			List<Double> latlngList = parseAddressByGoogleAPI(address);
@@ -98,6 +98,36 @@ public class LocationServiceImpl extends RemoteServiceServlet implements
 	}
 	
 	
+	private boolean reachMaxGoogleRequest(int googleCounts) {
+		final int MAX_GOOGLE_REQUEST = 1500;
+		Date currentDate = new Date();
+		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+		String currentDateString = format.format(currentDate);	
+		synchronized(dateString){
+			if(dateString.isEmpty()){
+				dateString = currentDateString;
+				//TODO
+				log.info("<reachMaxGoogleRequest> dateString="+dateString);
+				return false;
+			} else {
+				if(dateString.equals(currentDateString)){
+					if(googleCounts > MAX_GOOGLE_REQUEST){
+						log.info("<reachMaxGoogleRequest> numers of parser reach "+MAX_GOOGLE_REQUEST);
+						return true;
+					}
+					//TODO
+					log.info("<reachMaxGoogleRequest> googleCounts="+googleCounts);
+					return false;
+				} else {
+					dateString = currentDateString;
+					googleCounter.set(0);
+					log.info("<reachMaxGoogleRequest> dateString="+dateString);
+					return false;
+				}
+			}
+		}	
+	}
+
 	private String updateAddress(String address, String city) {
 		
 		if (address == null)
