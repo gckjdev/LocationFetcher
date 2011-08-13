@@ -6,6 +6,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -21,7 +22,6 @@ import org.jdom.input.SAXBuilder;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
-import com.ibm.icu.text.SimpleDateFormat;
 import com.mongodb.BasicDBObject;
 import com.orange.groupbuy.location.client.LocationService;
 import com.orange.groupbuy.location.client.model.PlaceRecord;
@@ -151,7 +151,7 @@ public class LocationServiceImpl extends RemoteServiceServlet implements
 		
 		try{
 		printStatistic();
-		
+		//TODO
 		boolean result = tryGoogleParsing(record);
 		if (!result || !isValidGps(record.getDoubleLatitude(), record.getDoubleLongitude())){
 			// update to failure status, never load the record again

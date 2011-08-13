@@ -29,7 +29,8 @@ public class LocationFetcher implements EntryPoint {
 	/**
 	 * change the init value if you want different fetch source
 	 */
-	private final static APIFactory.Type FETCH_SOURCE_TYPE = APIFactory.Type.BAIDU;
+	//TODO
+	private final static APIFactory.Type FETCH_SOURCE_TYPE = APIFactory.Type.SOSO;
 
 	private CellTable<PlaceRecord> cellTable;
 
