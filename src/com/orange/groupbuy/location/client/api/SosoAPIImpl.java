@@ -31,7 +31,8 @@ public class SosoAPIImpl implements FetchAPI {
 	 		latResult.value = location.getLat();
 	 		lngResult.value = location.getLng(); 	
          } else {
-         	alert("检索没有结果，原因: " + status + ",address=" + address);
+         	// TODO
+//         	alert("检索没有结果，原因: " + status + ",address=" + address);
          }
     });
 	}-*/;

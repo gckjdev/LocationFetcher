@@ -53,9 +53,9 @@ public class LocationServiceImpl extends RemoteServiceServlet implements
 		Iterator<?> iter = list.iterator();
 		while (iter.hasNext()) {
 			ProductAddress item = (ProductAddress) iter.next();
-			String addr = item.getAddress();
-			String city = item.getCity();
-			String id = item.getStringObjectId();
+			String addr = (String) item.getAddress();
+			String city = (String) item.getCity();
+			String id = (String) item.getStringObjectId();
 			records.add(new PlaceRecord(id, addr, city));
 		}
 		

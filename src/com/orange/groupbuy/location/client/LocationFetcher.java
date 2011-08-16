@@ -102,85 +102,92 @@ public class LocationFetcher implements EntryPoint {
 	}
 
 	protected void saveData() {
-		List<PlaceRecord> records = dataProvider.getList();
-		if(records.size() == 0)
-			return;
-		String lat = LocationFetcher.getLatResult();
-		String lng = LocationFetcher.getLngResult();
-		if (processedRow < records.size()) {
-			PlaceRecord r = records.get(processedRow);
-			r.setLatitude(lat);
-			r.setLongitude(lng);
+		synchronized ((Integer)processedRow) {
+			List<PlaceRecord> records = dataProvider.getList();
+			if(records.size() == 0)
+				return;
+			String lat = LocationFetcher.getLatResult();
+			String lng = LocationFetcher.getLngResult();
+			if (processedRow < records.size()) {
+				PlaceRecord r = records.get(processedRow);
+				r.setLatitude(lat);
+				r.setLongitude(lng);
 
-			locationService.savePlaceRecord(r, new AsyncCallback<Void>() {
-				@Override
-				public void onFailure(Throwable caught) {
-					GWT.log("save failed");
-					DialogBox box = new DialogBox();
-					box.setTitle("savePlaceRecord Failed");
-					box.setText(caught.getMessage());
-					box.show();
-				}
+				locationService.savePlaceRecord(r, new AsyncCallback<Void>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						GWT.log("save failed");
+						DialogBox box = new DialogBox();
+						box.setTitle("savePlaceRecord Failed");
+						box.setText(caught.getMessage());
+						box.show();
+					}
 
-				@Override
-				public void onSuccess(Void result) {
-					GWT.log("save ok");
-					// refresh table
-					dataProvider.refresh();
-					LocationFetcher.setLatResult("");
-					LocationFetcher.setLngResult("");
-				}
-			});
-		} else {
-			GWT.log("lat and lng is null");
+					@Override
+					public void onSuccess(Void result) {
+						GWT.log("save ok");
+						// refresh table
+						dataProvider.refresh();
+						LocationFetcher.setLatResult("");
+						LocationFetcher.setLngResult("");
+					}
+				});
+			} else {
+				GWT.log("lat and lng is null");
+			}
 		}
+		
 	}
 
 	protected void fetchData() {
 		List<PlaceRecord> records = dataProvider.getList();
 		String lat = LocationFetcher.getLatResult();
 		String lng = LocationFetcher.getLngResult();
-		if (lat.isEmpty() && lng.isEmpty()) {
-			if (records != null && !records.isEmpty()
-					&& ++processedRow < records.size()) {
-				PlaceRecord r = records.get(processedRow);
-				fether.fetch(r.getAddress(), r.getCity());
-			}
-			// TODO
-			if (processedRow >= records.size()) {
-				// let saveData() function quit
-				processedRow = Integer.MAX_VALUE;
-				locationService.getPlaceAddress(new Date(),
-						new AsyncCallback<List<PlaceRecord>>() {
-
-							@Override
-							public void onFailure(Throwable caught) {
-								DialogBox message = new DialogBox();
-								message.setTitle("failed to get palce");
-								message.setText(caught.getMessage());
-								message.show();
-							}
-
-							@Override
-							public void onSuccess(List<PlaceRecord> records) {
-								List<PlaceRecord> list = dataProvider.getList();
-								int len = list.size();
-								for (int i = 0; i < len; i++)
-									list.remove(0);
-								for (PlaceRecord palce : records) {
-									list.add(palce);
-								}
-								dataProvider.flush();
-								dataProvider.refresh();
-							}
-						});
-				if (records.size() > 0) {
-					processedRow = 0;
+		
+		synchronized((Integer)processedRow) {
+			if (lat.isEmpty() && lng.isEmpty()) {
+				if (records != null && !records.isEmpty()
+						&& ++processedRow < records.size()) {
 					PlaceRecord r = records.get(processedRow);
 					fether.fetch(r.getAddress(), r.getCity());
-				} 
+				}
+				// TODO
+				if (processedRow >= records.size()) {
+					// let saveData() function quit
+					processedRow = Integer.MAX_VALUE;
+					locationService.getPlaceAddress(new Date(),
+							new AsyncCallback<List<PlaceRecord>>() {
+
+								@Override
+								public void onFailure(Throwable caught) {
+									DialogBox message = new DialogBox();
+									message.setTitle("failed to get palce");
+									message.setText(caught.getMessage());
+									message.show();
+								}
+
+								@Override
+								public void onSuccess(List<PlaceRecord> records) {
+									List<PlaceRecord> list = dataProvider.getList();
+									int len = list.size();
+									for (int i = 0; i < len; i++)
+										list.remove(0);
+									for (PlaceRecord palce : records) {
+										list.add(palce);
+									}
+									dataProvider.flush();
+									dataProvider.refresh();
+								}
+							});
+					if (records.size() > 0) {
+						processedRow = 0;
+						PlaceRecord r = records.get(processedRow);
+						fether.fetch(r.getAddress(), r.getCity());
+					} 
+				}
 			}
 		}
+		
 	}
 
 	private static native String getLngResult() /*-{
