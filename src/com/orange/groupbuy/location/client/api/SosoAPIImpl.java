@@ -6,10 +6,19 @@ public class SosoAPIImpl implements FetchAPI {
 
 	@Override
 	public void fetch(String address, String city) {
-		GWT.log("address="+address);
+		address = addCitytoAddress(address, city);
+		GWT.log("<SosoAPIImpl> address="+address);
 		fetchNaviveImpl(address, city);	
 	}
 	
+	private String addCitytoAddress(String address, String city) {
+		if (address.contains("市"))
+			return address;
+		else
+			address = city.concat("市").concat(address);
+		return address;	
+	}
+
 	public static native void fetchNaviveImpl(String address, String city)/*-{
 	// 创建地址解析器实例
 	var myGeo = new $wnd.soso.maps.Geocoder();
@@ -19,13 +28,12 @@ public class SosoAPIImpl implements FetchAPI {
 	myGeo.geocode({'address': address}, function(results, status) {
     	if (status == $wnd.soso.maps.GeocoderStatus.OK) {
 	 		var location = results.location;
-	 		var lat = location.getLat();
 	 		latResult.value = location.getLat();
-	 		lngResult.value = location.getLng(); 
+	 		lngResult.value = location.getLng(); 	
          } else {
-         	
+         	alert("检索没有结果，原因: " + status + ",address=" + address);
          }
     });
-}-*/;
+	}-*/;
 
 }

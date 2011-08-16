@@ -20,7 +20,6 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.mongodb.BasicDBObject;
 import com.orange.groupbuy.location.client.LocationService;
@@ -106,7 +105,6 @@ public class LocationServiceImpl extends RemoteServiceServlet implements
 		synchronized(dateString){
 			if(dateString.isEmpty()){
 				dateString = currentDateString;
-				//TODO
 				log.info("<reachMaxGoogleRequest> dateString="+dateString);
 				return false;
 			} else {
@@ -115,8 +113,7 @@ public class LocationServiceImpl extends RemoteServiceServlet implements
 						log.info("<reachMaxGoogleRequest> numers of parser reach "+MAX_GOOGLE_REQUEST);
 						return true;
 					}
-					//TODO
-					log.info("<reachMaxGoogleRequest> googleCounts="+googleCounts);
+					log.info("<tryGoogleParsing> googleCounts="+googleCounts);
 					return false;
 				} else {
 					dateString = currentDateString;
@@ -209,6 +206,7 @@ public class LocationServiceImpl extends RemoteServiceServlet implements
 			URL getUrl = new URL(getURL);
 			SAXBuilder sb = new SAXBuilder();
 			Document doc = sb.build(getUrl);
+			
 			if (doc == null)
 				return null;
 			

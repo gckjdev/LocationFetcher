@@ -41,7 +41,7 @@ public class LocationFetcher implements EntryPoint {
 	private FetchAPI fether;
 
 	private static final int REFRESH_INTERVAL = 1000;
-	private static final int SAVE_INTERVAL = 1300;
+	private static final int SAVE_INTERVAL = 1500;
 
 	/**
 	 * This is the entry point method.
