@@ -54,6 +54,31 @@ public class MongoDBClient {
 		boolean auth = db.authenticate(userName, password.toCharArray());
 		return;
 	}
+	
+	public MongoDBClient(String dbName){
+
+		String address = System.getProperty("mongodb.address");
+		String portStr = System.getProperty("mongodb.port");
+		int port = 27017;
+		
+		if (address == null){
+			address = "localhost";
+		}
+		if (portStr != null){
+			port = Integer.parseInt(portStr);
+		}
+		
+		try {
+			this.mongo = new Mongo(address, port);
+		} catch (UnknownHostException e) {
+			e.printStackTrace(); // TODO
+		} catch (MongoException e) {
+			e.printStackTrace(); // TODO
+		}
+		
+		this.db = mongo.getDB(dbName);
+		return;		
+	}
 
 	public boolean insert(String tableName, DBObject docObject) {
 		DBCollection collection = db.getCollection(tableName);

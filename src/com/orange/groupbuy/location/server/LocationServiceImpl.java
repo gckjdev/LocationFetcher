@@ -35,8 +35,7 @@ public class LocationServiceImpl extends RemoteServiceServlet implements
 
 	private Logger log = Logger.getLogger(LocationServiceImpl.class.getName());
 	public static final String GET_URL = "http://maps.google.com/maps/api/geocode/xml?address=";
-	public static final MongoDBClient mongoClient = new MongoDBClient("localhost", "groupbuy",
-			"", "");
+	public static final MongoDBClient mongoClient = new MongoDBClient("groupbuy");
 	
 	static AtomicInteger failCounter = new AtomicInteger(0);
 	static AtomicInteger successCounter = new AtomicInteger(0);
